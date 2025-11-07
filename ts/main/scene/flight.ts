@@ -1,24 +1,36 @@
 import { Main } from "../../util/game/main";
+import { Transitions } from "../../util/game/transitions/transitionLibrary";
 import { Div } from "../../util/html/div";
 import { Vector2 } from "../../util/math/vector2";
 import { Dialogue } from "../dialogue/dialogue";
 import { FlightGame } from "../flightGame";
 import { BackgroundParallax } from "./backgrounds/backgroundParallax";
-import { DesertBackground } from "./backgrounds/desert";
+import { DesertBackground } from "./backgrounds/moutain";
 import { ForestBackground } from "./backgrounds/forest";
 import { Plane } from "./plane";
 
 
-export class DesertFlight extends Div {
-    content: Div;
-    bg: BackgroundParallax;
-    plane: Plane;
-    dialogue: Dialogue;
-    scaleFactor: number;
-    follow1: Plane;
-    follow2: Plane;
-    pointerDown: boolean = false;
-    public constructor(private parent: FlightGame) {
+export class Flight extends Div {
+    public content: Div;
+    public bg: BackgroundParallax;
+    public plane: Plane;
+    public dialogue: Dialogue;
+    public scaleFactor: number;
+    public follow1: Plane;
+    public follow2: Plane;
+    public pointerDown: boolean = false;
+
+    set visible(value: boolean) {
+        super.visible = value;
+        if (!value) {
+            this.pointerDown = false;
+        }
+    }
+    get visible(): boolean {
+        return super.visible;
+    }
+
+    public constructor(protected parent: FlightGame, bg: BackgroundParallax) {
         super({
             classNames: ['roi'],
             style: 'display: flex; justify-content: center; align-items: center;',
@@ -28,7 +40,7 @@ export class DesertFlight extends Div {
             size: ['1920px', '1080px'],
             style: 'transform-origin: top left; position: absolute; left: 0; top: 0;',
         })));
-        this.content.append((this.bg = new DesertBackground()));
+        this.content.append((this.bg = bg));
 
         this.content.append((this.follow1 = new Plane()));
         this.content.append((this.plane = new Plane()));
@@ -78,19 +90,5 @@ export class DesertFlight extends Div {
         this.bg.height(this.plane.height * 2 - 1400);
         this.follow1.setTarget(this.plane.followPosition1.add(new Vector2(300 - 100, 50)));
         this.follow2.setTarget(this.plane.followPosition2.add(new Vector2(150 - 100, 120)));
-
-        if (this.visible) {
-            this.parent.forestScene.plane.setTarget(this.plane.target);
-        }
-        if ($.frame % 2000 === 0) {
-            $.transitions.trigger({
-                from: this,
-                to: this.parent.forestScene,
-                inTransition: $.transitions.IN.WIPERIGHT,
-                inSettings: { color: '#539ac1' },
-                outTransition: $.transitions.OUT.WIPERIGHT,
-                outSettings: { color: '#539ac1' },
-            });
-        }
     }
 }

@@ -11,20 +11,20 @@ import { Plane } from "./plane";
 import { Flight } from "./flight";
 
 
-export class ForestFlight extends Flight {
+export class MountainFlight extends Flight {
     public constructor(parent: FlightGame) {
-        super(parent, new ForestBackground());
+        super(parent, new DesertBackground());
     }
 
     tick(): void {
         super.tick();
         if (this.visible) {
-            this.parent.mountainScene.plane.setTarget(this.plane.target);
+            this.parent.forestScene.plane.setTarget(this.plane.target);
         }
         if ($.frame % 2000 === 1000) {
             $.transitions.trigger({
                 from: this,
-                to: this.parent.mountainScene,
+                to: this.parent.forestScene,
                 inTransition: $.transitions.IN.WIPERIGHT,
                 inSettings: { color: '#539ac1' },
                 outTransition: $.transitions.OUT.WIPERIGHT,

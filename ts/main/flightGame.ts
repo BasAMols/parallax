@@ -2,21 +2,21 @@ import { Container } from '../util/game/container';
 import { Main } from '../util/game/main';
 import { ForestFlight } from './scene/forestFlight';
 import { BackgroundParallax } from './scene/backgrounds/backgroundParallax';
-import { DesertFlight } from './scene/desertFlight';
+import { MountainFlight } from './scene/mountainFlight';
 
 export class FlightGame extends Main {
     forestScene: ForestFlight;
-    desertScene: DesertFlight;
+    mountainScene: MountainFlight;
     bg: BackgroundParallax;
     public constructor(container: Container) {
         super(container);
         this.style('display: flex; justify-content: center; align-items: center;');
         this.append((this.forestScene = new ForestFlight(this)));
-        this.append((this.desertScene = new DesertFlight(this)));
+        this.append((this.mountainScene = new MountainFlight(this)));
         
 
         this.forestScene.visible = false;
-        this.desertScene.visible = false;
+        this.mountainScene.visible = false;
         $.transitions.trigger({
             to: this.forestScene,
             inTransition: $.transitions.IN.INSTANT,
@@ -33,6 +33,6 @@ export class FlightGame extends Main {
             ($.size.y) / 9
         );
         this.forestScene.scale(factor);
-        this.desertScene.scale(factor);
+        this.mountainScene.scale(factor);
     }
 }

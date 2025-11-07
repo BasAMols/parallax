@@ -724,9 +724,9 @@ var Plane = class extends Div {
   }
 };
 
-// ts/main/scene/forestFlight.ts
-var ForestFlight = class extends Div {
-  constructor(parent) {
+// ts/main/scene/flight.ts
+var Flight = class extends Div {
+  constructor(parent, bg) {
     super({
       classNames: ["roi"],
       style: "display: flex; justify-content: center; align-items: center;"
@@ -738,7 +738,7 @@ var ForestFlight = class extends Div {
       size: ["1920px", "1080px"],
       style: "transform-origin: top left; position: absolute; left: 0; top: 0;"
     }));
-    this.content.append(this.bg = new ForestBackground());
+    this.content.append(this.bg = bg);
     this.content.append(this.follow1 = new Plane());
     this.content.append(this.plane = new Plane());
     this.content.append(this.follow2 = new Plane());
@@ -766,6 +766,15 @@ var ForestFlight = class extends Div {
       this.pointerDown = false;
     });
   }
+  set visible(value) {
+    super.visible = value;
+    if (!value) {
+      this.pointerDown = false;
+    }
+  }
+  get visible() {
+    return super.visible;
+  }
   scale(factor) {
     this.scaleFactor = factor;
     this.size(["".concat(factor * 16, "px"), "".concat(factor * 9, "px")]);
@@ -777,23 +786,33 @@ var ForestFlight = class extends Div {
     this.bg.height(this.plane.height * 2 - 1400);
     this.follow1.setTarget(this.plane.followPosition1.add(new Vector2(300 - 100, 50)));
     this.follow2.setTarget(this.plane.followPosition2.add(new Vector2(150 - 100, 120)));
+  }
+};
+
+// ts/main/scene/forestFlight.ts
+var ForestFlight = class extends Flight {
+  constructor(parent) {
+    super(parent, new ForestBackground());
+  }
+  tick() {
+    super.tick();
     if (this.visible) {
-      this.parent.desertScene.plane.setTarget(this.plane.target);
+      this.parent.mountainScene.plane.setTarget(this.plane.target);
     }
     if ($.frame % 2e3 === 1e3) {
       $.transitions.trigger({
         from: this,
-        to: this.parent.desertScene,
+        to: this.parent.mountainScene,
         inTransition: $.transitions.IN.WIPERIGHT,
-        inSettings: { color: "#357265" },
+        inSettings: { color: "#539ac1" },
         outTransition: $.transitions.OUT.WIPERIGHT,
-        outSettings: { color: "#357265" }
+        outSettings: { color: "#539ac1" }
       });
     }
   }
 };
 
-// ts/main/scene/backgrounds/desert.ts
+// ts/main/scene/backgrounds/moutain.ts
 var DesertBackground = class extends BackgroundParallax {
   constructor() {
     super("desert", 1900 * 4);
@@ -970,63 +989,17 @@ var DesertBackground = class extends BackgroundParallax {
   }
 };
 
-// ts/main/scene/desertFlight.ts
-var DesertFlight = class extends Div {
+// ts/main/scene/mountainFlight.ts
+var MountainFlight = class extends Flight {
   constructor(parent) {
-    super({
-      classNames: ["roi"],
-      style: "display: flex; justify-content: center; align-items: center;"
-    });
-    this.parent = parent;
-    this.pointerDown = false;
-    this.append(this.content = new Div({
-      classNames: ["content"],
-      size: ["1920px", "1080px"],
-      style: "transform-origin: top left; position: absolute; left: 0; top: 0;"
-    }));
-    this.content.append(this.bg = new DesertBackground());
-    this.content.append(this.follow1 = new Plane());
-    this.content.append(this.plane = new Plane());
-    this.content.append(this.follow2 = new Plane());
-    this.content.append(this.bg.foregroundLayer);
-    this.follow1.style("scale: 0.9;");
-    this.follow2.style("scale: 1.05;");
-    this.follow1.sprite.value = 5;
-    this.follow2.sprite.value = 0;
-    this.follow1.setPosition(this.plane.position.add(new Vector2(-5e3, 40)));
-    this.follow2.setPosition(this.plane.position.add(new Vector2(-4e3 - 100, 120)));
-    const i = this.content.append(new Div({
-      size: ["1920px", "1080px"],
-      style: "position: absolute; left: 0; top: 0;"
-    }));
-    i.dom.addEventListener("pointerdown", (e) => {
-      this.pointerDown = true;
-      this.plane.setTarget(new Vector2(e.offsetX, e.offsetY));
-    });
-    i.dom.addEventListener("pointermove", (e) => {
-      if (this.pointerDown) {
-        this.plane.setTarget(new Vector2(e.offsetX, e.offsetY));
-      }
-    });
-    i.dom.addEventListener("pointerup", (e) => {
-      this.pointerDown = false;
-    });
-  }
-  scale(factor) {
-    this.scaleFactor = factor;
-    this.size(["".concat(factor * 16, "px"), "".concat(factor * 9, "px")]);
-    this.content.style("transform: scale(".concat(factor * 16 / 1920, ", ").concat(factor * 16 / 1920, ");"));
+    super(parent, new DesertBackground());
   }
   tick() {
     super.tick();
-    this.bg.move(this.plane.speed);
-    this.bg.height(this.plane.height * 2 - 1400);
-    this.follow1.setTarget(this.plane.followPosition1.add(new Vector2(300 - 100, 50)));
-    this.follow2.setTarget(this.plane.followPosition2.add(new Vector2(150 - 100, 120)));
     if (this.visible) {
       this.parent.forestScene.plane.setTarget(this.plane.target);
     }
-    if ($.frame % 2e3 === 0) {
+    if ($.frame % 2e3 === 1e3) {
       $.transitions.trigger({
         from: this,
         to: this.parent.forestScene,
@@ -1045,9 +1018,9 @@ var FlightGame = class extends Main {
     super(container);
     this.style("display: flex; justify-content: center; align-items: center;");
     this.append(this.forestScene = new ForestFlight(this));
-    this.append(this.desertScene = new DesertFlight(this));
+    this.append(this.mountainScene = new MountainFlight(this));
     this.forestScene.visible = false;
-    this.desertScene.visible = false;
+    this.mountainScene.visible = false;
     $.transitions.trigger({
       to: this.forestScene,
       inTransition: $.transitions.IN.INSTANT,
@@ -1063,7 +1036,7 @@ var FlightGame = class extends Main {
       $.size.y / 9
     );
     this.forestScene.scale(factor);
-    this.desertScene.scale(factor);
+    this.mountainScene.scale(factor);
   }
 };
 

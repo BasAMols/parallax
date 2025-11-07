@@ -1,0 +1,279 @@
+
+import { Div } from '../../../util/html/div';
+import { Vector2 } from '../../../util/math/vector2';
+import { BackgroundParallax } from './backgroundParallax';
+
+export class ForestBackground extends BackgroundParallax {
+
+    public constructor() {
+        super('forest', 1900*4);
+
+        this.height(100);
+   
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -2290px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/4_Forest_parallax_vertical_skybox_fulll.png',
+                    size: `25% 100%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.04,
+        });
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -900px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/8_Forest_parallax_vertical_cloud_5.png',
+                    size: `25% 100%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.05,
+        });
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -1200px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/7_Forest_parallax_vertical_cloud_4.png',
+                    size: `25% 100%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.05,
+        });
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -1500px',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/6_Forest_parallax_vertical_cloud_3.png',
+                    size: `25% 100%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.06,
+        });
+
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -2000px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/4-1_Forest_parallax_vertical_forest_moon_big.png',
+                    size: `25% 100%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.07,
+        });
+
+        //mountains
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: 500px;',
+                background: {
+                    color: '#8dd7fb',
+                }
+            })) as Div,
+            speed: 0.09,
+        });
+
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -1800px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/3_Forest_parallax_vertical_mountain_back.png',
+                    size: `12.5% 50%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.1,
+        });
+
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -2250px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/3_Forest_parallax_vertical_mountain_back.png',
+                    size: `25% 100%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.11,
+        });
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -1200px; opacity: 0.5;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/6_Forest_parallax_vertical_cloud_3.png',
+                    size: `12.5% 50%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.12,
+        });
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -1450px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/3_Forest_parallax_vertical_mountain_back.png',
+                    size: `50% 200%`,
+                    position: 'bottom center',
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.14,
+        });
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -1000px; opacity: 0.5;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/6_Forest_parallax_vertical_cloud_3.png',
+                    size: `25% 100%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.15,
+        });
+        //forest
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 5000),
+                style: 'position: absolute; left: -1920px; top: 690px;',
+                background: {
+                    color: '#357265',
+                }
+            })) as Div,
+            speed: 0.28,
+        });
+
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -2300px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/2_Forest_parallax_vertical_forest_mid.png',
+                    size: `25% 100%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.3,
+        });
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -1690px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/2_Forest_parallax_vertical_forest_mid.png',
+                    size: `12.5% 50%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.35,
+        });
+
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -1700px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/1_Forest_parallax_vertical_forest_low.png',
+                    size: `12.5% 50%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.5,
+        });
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -1600px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/0_Forest_parallax_vertical_forest_tree_front.png',
+                    size: `12.5% 50%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.55,
+        });
+        this.layer.push({
+            element: this.backgroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -2300px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/1_Forest_parallax_vertical_forest_low.png',
+                    size: `25% 100%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.6,
+        });
+        this.layer.push({
+            element: this.foregroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: 1250px;',
+                background: {
+                    color: '#0f3b4a',
+                }
+            })) as Div,
+            speed: 0.75,
+        });
+        this.layer.push({
+            element: this.foregroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -2300px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/0_Forest_parallax_vertical_forest_tree_front.png',
+                    size: `25% 100%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.75,
+        });
+        this.layer.push({
+            element: this.foregroundLayer.append(new Div({
+                size: new Vector2(1900*4, 3450),
+                style: 'position: absolute; left: -1920px; top: -2100px;',
+                background: {
+                    type: 'image',
+                    image: 'dist/images/forest/0_Forest_parallax_vertical_forest_tree_front.png',
+                    size: `25% 100%`,
+                    repeat: 'repeat-x',
+                }
+            })) as Div,
+            speed: 0.95,
+        });
+
+
+        
+
+
+    }
+}

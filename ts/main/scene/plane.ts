@@ -6,13 +6,14 @@ import { Vector2 } from "../../util/math/vector2";
 export class Plane extends Div {
     sprite: Sprite;
     public speed: number = 30;
-    public maxScreenSpeed: number = 2;
+    public maxScreenSpeed: number = 3;
     public height: number = 0;
     exhaustHigh: Sprite;
     exhaustLow: Sprite;
     target: Vector2 = new Vector2(0, 0);
     position: Vector2 = new Vector2(0, 0);
     positions: Vector2[] = [];
+
     public constructor() {
         super({
             classNames: ['plane'],
@@ -44,6 +45,9 @@ export class Plane extends Div {
             style: 'left: -14px; top: 61px;',
             visible: false
         })));
+
+        this.setPosition(new Vector2(900, 400));
+        this.setTarget(new Vector2(900, 400));
     }
 
 
@@ -52,7 +56,10 @@ export class Plane extends Div {
         this.style(`transform: translate(${v.x}px, ${v.y}px);`);
         this.height = v.y
         this.positions.push(v);
-        if (this.positions.length > 20) {
+        while (this.positions.length < 20) {
+            this.positions.push(v);
+        }
+        while (this.positions.length > 20) {
             this.positions.shift();
         }
     }
@@ -63,7 +70,7 @@ export class Plane extends Div {
         return this.positions[10];
     }
     setTarget(v: Vector2) {
-        this.target = v.subtract(new Vector2(175, 75));
+        this.target = v;
     }
 
     tick() {
@@ -72,7 +79,7 @@ export class Plane extends Div {
         this.exhaustLow.value = Math.floor($.time / 100);
         const lastPosition = this.position.clone();
         if (this.target){
-            this.setPosition(this.position.moveTowards(this.target, this.maxScreenSpeed*$.intervalMultiplier));
+            this.setPosition(this.position.moveTowards(this.target.subtract(new Vector2(175, 75)), this.maxScreenSpeed*$.intervalMultiplier));
         }
         const delta = this.position.subtract(lastPosition);
         if (delta.x > (this.maxScreenSpeed/3)) {

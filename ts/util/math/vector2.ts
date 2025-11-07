@@ -34,7 +34,7 @@ export class Vector2 {
         return new Vector2(x, y);
     }
     
-    public multiplyComponents(...args: (number | Vector2)[]): Vector2 {
+    public multiply(...args: (number | Vector2)[]): Vector2 {
         let x = this.x;
         let y = this.y;
         
@@ -50,7 +50,7 @@ export class Vector2 {
         return new Vector2(x, y);
     }
     
-    public divideComponents(...args: (number | Vector2)[]): Vector2 {
+    public divide(...args: (number | Vector2)[]): Vector2 {
         let x = this.x;
         let y = this.y;
         
@@ -148,7 +148,7 @@ export class Vector2 {
     public clampMagnitude(maxMagnitude: number): Vector2 {
         const magnitude = this.magnitude();
         if (magnitude > maxMagnitude) {
-            return this.normalise().multiplyComponents(maxMagnitude);
+            return this.normalise().multiply(maxMagnitude);
         }
         return this;
     }

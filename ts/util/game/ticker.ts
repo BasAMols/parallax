@@ -114,11 +114,7 @@ export class Ticker {
 
         // Call all registered callbacks
         this.callbacks.forEach(callback => {
-            try {
-                callback(deltaTime, elapsedTime, this.frameCount);
-            } catch (error) {
-                console.error('Error in ticker callback:', error);
-            }
+            callback(deltaTime, elapsedTime, this.frameCount);
         });
 
         // Schedule next frame

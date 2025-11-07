@@ -1,9 +1,9 @@
-import { Game } from './main/game';
-import { Container } from "./util/container";
+import { FlightGame } from './main/flightGame';
+import { Container } from "./util/game/container";
 
 document.addEventListener("DOMContentLoaded", async () => {
     const g = new Container();
     document.body.appendChild(g.dom);
-    g.append(new Game(g));
+    g.append(new FlightGame(g));
     g.start();
 });

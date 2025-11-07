@@ -160,7 +160,7 @@ var Vector2 = class _Vector2 {
     }
     return new _Vector2(x, y);
   }
-  multiplyComponents(...args) {
+  multiply(...args) {
     let x = this.x;
     let y = this.y;
     for (const arg of args) {
@@ -174,7 +174,7 @@ var Vector2 = class _Vector2 {
     }
     return new _Vector2(x, y);
   }
-  divideComponents(...args) {
+  divide(...args) {
     let x = this.x;
     let y = this.y;
     for (const arg of args) {
@@ -253,7 +253,7 @@ var Vector2 = class _Vector2 {
   clampMagnitude(maxMagnitude) {
     const magnitude = this.magnitude();
     if (magnitude > maxMagnitude) {
-      return this.normalise().multiplyComponents(maxMagnitude);
+      return this.normalise().multiply(maxMagnitude);
     }
     return this;
   }
@@ -304,7 +304,7 @@ var Vector2 = class _Vector2 {
   }
 };
 
-// ts/util/main.ts
+// ts/util/game/main.ts
 var Main = class extends Div {
   constructor(container) {
     super({
@@ -320,7 +320,8 @@ var Main = class extends Div {
       time: 0,
       get intervalMultiplier() {
         return container.ticker.currentFPS / 60;
-      }
+      },
+      transitions: container.transitions
     };
   }
 };
@@ -651,7 +652,7 @@ var Plane = class extends Div {
       style: "transform-origin: center center;"
     });
     this.speed = 30;
-    this.maxScreenSpeed = 2;
+    this.maxScreenSpeed = 3;
     this.height = 0;
     this.target = new Vector2(0, 0);
     this.position = new Vector2(0, 0);
@@ -680,13 +681,18 @@ var Plane = class extends Div {
       style: "left: -14px; top: 61px;",
       visible: false
     }));
+    this.setPosition(new Vector2(900, 400));
+    this.setTarget(new Vector2(900, 400));
   }
   setPosition(v) {
     this.position = v;
     this.style("transform: translate(".concat(v.x, "px, ").concat(v.y, "px);"));
     this.height = v.y;
     this.positions.push(v);
-    if (this.positions.length > 20) {
+    while (this.positions.length < 20) {
+      this.positions.push(v);
+    }
+    while (this.positions.length > 20) {
       this.positions.shift();
     }
   }
@@ -697,7 +703,7 @@ var Plane = class extends Div {
     return this.positions[10];
   }
   setTarget(v) {
-    this.target = v.subtract(new Vector2(175, 75));
+    this.target = v;
   }
   tick() {
     super.tick();
@@ -705,7 +711,7 @@ var Plane = class extends Div {
     this.exhaustLow.value = Math.floor($.time / 100);
     const lastPosition = this.position.clone();
     if (this.target) {
-      this.setPosition(this.position.moveTowards(this.target, this.maxScreenSpeed * $.intervalMultiplier));
+      this.setPosition(this.position.moveTowards(this.target.subtract(new Vector2(175, 75)), this.maxScreenSpeed * $.intervalMultiplier));
     }
     const delta = this.position.subtract(lastPosition);
     if (delta.x > this.maxScreenSpeed / 3) {
@@ -718,13 +724,14 @@ var Plane = class extends Div {
   }
 };
 
-// ts/main/content.ts
-var Content = class extends Div {
-  constructor() {
+// ts/main/scene/forestFlight.ts
+var ForestFlight = class extends Div {
+  constructor(parent) {
     super({
       classNames: ["roi"],
       style: "display: flex; justify-content: center; align-items: center;"
     });
+    this.parent = parent;
     this.pointerDown = false;
     this.append(this.content = new Div({
       classNames: ["content"],
@@ -748,6 +755,7 @@ var Content = class extends Div {
     }));
     i.dom.addEventListener("pointerdown", (e) => {
       this.pointerDown = true;
+      this.plane.setTarget(new Vector2(e.offsetX, e.offsetY));
     });
     i.dom.addEventListener("pointermove", (e) => {
       if (this.pointerDown) {
@@ -769,15 +777,284 @@ var Content = class extends Div {
     this.bg.height(this.plane.height * 2 - 1400);
     this.follow1.setTarget(this.plane.followPosition1.add(new Vector2(300 - 100, 50)));
     this.follow2.setTarget(this.plane.followPosition2.add(new Vector2(150 - 100, 120)));
+    if (this.visible) {
+      this.parent.desertScene.plane.setTarget(this.plane.target);
+    }
+    if ($.frame % 2e3 === 1e3) {
+      $.transitions.trigger({
+        from: this,
+        to: this.parent.desertScene,
+        inTransition: $.transitions.IN.WIPERIGHT,
+        inSettings: { color: "#357265" },
+        outTransition: $.transitions.OUT.WIPERIGHT,
+        outSettings: { color: "#357265" }
+      });
+    }
   }
 };
 
-// ts/main/game.ts
-var Game = class extends Main {
+// ts/main/scene/backgrounds/desert.ts
+var DesertBackground = class extends BackgroundParallax {
+  constructor() {
+    super("desert", 1900 * 4);
+    this.height(100);
+    this.layer.push({
+      element: this.backgroundLayer.append(new Div({
+        size: new Vector2(1900 * 4, 3450),
+        style: "position: absolute; left: -1920px; top: -2290px;",
+        background: {
+          type: "image",
+          image: "dist/images/forest/4_Forest_parallax_vertical_skybox_fulll.png",
+          size: "25% 100%",
+          repeat: "repeat-x"
+        }
+      })),
+      speed: 0.04
+    });
+    this.layer.push({
+      element: this.backgroundLayer.append(new Div({
+        size: new Vector2(1900 * 4, 3450),
+        style: "position: absolute; left: -1920px; top: -900px;",
+        background: {
+          type: "image",
+          image: "dist/images/forest/8_Forest_parallax_vertical_cloud_5.png",
+          size: "25% 100%",
+          repeat: "repeat-x"
+        }
+      })),
+      speed: 0.05
+    });
+    this.layer.push({
+      element: this.backgroundLayer.append(new Div({
+        size: new Vector2(1900 * 4, 3450),
+        style: "position: absolute; left: -1920px; top: -1200px;",
+        background: {
+          type: "image",
+          image: "dist/images/forest/7_Forest_parallax_vertical_cloud_4.png",
+          size: "25% 100%",
+          repeat: "repeat-x"
+        }
+      })),
+      speed: 0.05
+    });
+    this.layer.push({
+      element: this.backgroundLayer.append(new Div({
+        size: new Vector2(1900 * 4, 3450),
+        style: "position: absolute; left: -1920px; top: -1500px",
+        background: {
+          type: "image",
+          image: "dist/images/forest/6_Forest_parallax_vertical_cloud_3.png",
+          size: "25% 100%",
+          repeat: "repeat-x"
+        }
+      })),
+      speed: 0.06
+    });
+    this.layer.push({
+      element: this.backgroundLayer.append(new Div({
+        size: new Vector2(1900 * 4, 3450),
+        style: "position: absolute; left: -1920px; top: -2000px;",
+        background: {
+          type: "image",
+          image: "dist/images/forest/4-1_Forest_parallax_vertical_forest_moon_big.png",
+          size: "25% 100%",
+          repeat: "repeat-x"
+        }
+      })),
+      speed: 0.07
+    });
+    this.layer.push({
+      element: this.backgroundLayer.append(new Div({
+        size: new Vector2(1900 * 4, 3450),
+        style: "position: absolute; left: -1920px; top: 500px;",
+        background: {
+          color: "#8dd7fb"
+        }
+      })),
+      speed: 0.09
+    });
+    this.layer.push({
+      element: this.backgroundLayer.append(new Div({
+        size: new Vector2(1900 * 4, 3450),
+        style: "position: absolute; left: -1920px; top: -1800px;",
+        background: {
+          type: "image",
+          image: "dist/images/forest/3_Forest_parallax_vertical_mountain_back.png",
+          size: "12.5% 50%",
+          repeat: "repeat-x"
+        }
+      })),
+      speed: 0.1
+    });
+    this.layer.push({
+      element: this.backgroundLayer.append(new Div({
+        size: new Vector2(1900 * 4, 3450),
+        style: "position: absolute; left: -1920px; top: -2250px;",
+        background: {
+          type: "image",
+          image: "dist/images/forest/3_Forest_parallax_vertical_mountain_back.png",
+          size: "25% 100%",
+          repeat: "repeat-x"
+        }
+      })),
+      speed: 0.11
+    });
+    this.layer.push({
+      element: this.backgroundLayer.append(new Div({
+        size: new Vector2(1900 * 4, 3450),
+        style: "position: absolute; left: -1920px; top: -1200px; opacity: 0.5;",
+        background: {
+          type: "image",
+          image: "dist/images/forest/6_Forest_parallax_vertical_cloud_3.png",
+          size: "12.5% 50%",
+          repeat: "repeat-x"
+        }
+      })),
+      speed: 0.12
+    });
+    this.layer.push({
+      element: this.backgroundLayer.append(new Div({
+        size: new Vector2(1900 * 4, 3450),
+        style: "position: absolute; left: -1920px; top: -1450px;",
+        background: {
+          type: "image",
+          image: "dist/images/forest/3_Forest_parallax_vertical_mountain_back.png",
+          size: "50% 200%",
+          position: "bottom center",
+          repeat: "repeat-x"
+        }
+      })),
+      speed: 0.14
+    });
+    this.layer.push({
+      element: this.backgroundLayer.append(new Div({
+        size: new Vector2(1900 * 4, 3450),
+        style: "position: absolute; left: -1920px; top: -1000px; opacity: 0.5;",
+        background: {
+          type: "image",
+          image: "dist/images/forest/6_Forest_parallax_vertical_cloud_3.png",
+          size: "25% 100%",
+          repeat: "repeat-x"
+        }
+      })),
+      speed: 0.15
+    });
+    this.layer.push({
+      element: this.backgroundLayer.append(new Div({
+        size: new Vector2(1900 * 4, 3450),
+        style: "position: absolute; left: -1920px; top: -1000px;",
+        background: {
+          type: "image",
+          image: "dist/images/forest/3_Forest_parallax_vertical_mountain_back.png",
+          size: "50% 200%",
+          position: "bottom center",
+          repeat: "repeat-x"
+        }
+      })),
+      speed: 0.2
+    });
+    this.layer.push({
+      element: this.backgroundLayer.append(new Div({
+        size: new Vector2(1900 * 4, 3450),
+        style: "position: absolute; left: -1920px; top: 0px;",
+        background: {
+          type: "image",
+          image: "dist/images/forest/3_Forest_parallax_vertical_mountain_back.png",
+          size: "100% 400%",
+          position: "bottom center",
+          repeat: "repeat-x"
+        }
+      })),
+      speed: 0.3
+    });
+  }
+};
+
+// ts/main/scene/desertFlight.ts
+var DesertFlight = class extends Div {
+  constructor(parent) {
+    super({
+      classNames: ["roi"],
+      style: "display: flex; justify-content: center; align-items: center;"
+    });
+    this.parent = parent;
+    this.pointerDown = false;
+    this.append(this.content = new Div({
+      classNames: ["content"],
+      size: ["1920px", "1080px"],
+      style: "transform-origin: top left; position: absolute; left: 0; top: 0;"
+    }));
+    this.content.append(this.bg = new DesertBackground());
+    this.content.append(this.follow1 = new Plane());
+    this.content.append(this.plane = new Plane());
+    this.content.append(this.follow2 = new Plane());
+    this.content.append(this.bg.foregroundLayer);
+    this.follow1.style("scale: 0.9;");
+    this.follow2.style("scale: 1.05;");
+    this.follow1.sprite.value = 5;
+    this.follow2.sprite.value = 0;
+    this.follow1.setPosition(this.plane.position.add(new Vector2(-5e3, 40)));
+    this.follow2.setPosition(this.plane.position.add(new Vector2(-4e3 - 100, 120)));
+    const i = this.content.append(new Div({
+      size: ["1920px", "1080px"],
+      style: "position: absolute; left: 0; top: 0;"
+    }));
+    i.dom.addEventListener("pointerdown", (e) => {
+      this.pointerDown = true;
+      this.plane.setTarget(new Vector2(e.offsetX, e.offsetY));
+    });
+    i.dom.addEventListener("pointermove", (e) => {
+      if (this.pointerDown) {
+        this.plane.setTarget(new Vector2(e.offsetX, e.offsetY));
+      }
+    });
+    i.dom.addEventListener("pointerup", (e) => {
+      this.pointerDown = false;
+    });
+  }
+  scale(factor) {
+    this.scaleFactor = factor;
+    this.size(["".concat(factor * 16, "px"), "".concat(factor * 9, "px")]);
+    this.content.style("transform: scale(".concat(factor * 16 / 1920, ", ").concat(factor * 16 / 1920, ");"));
+  }
+  tick() {
+    super.tick();
+    this.bg.move(this.plane.speed);
+    this.bg.height(this.plane.height * 2 - 1400);
+    this.follow1.setTarget(this.plane.followPosition1.add(new Vector2(300 - 100, 50)));
+    this.follow2.setTarget(this.plane.followPosition2.add(new Vector2(150 - 100, 120)));
+    if (this.visible) {
+      this.parent.forestScene.plane.setTarget(this.plane.target);
+    }
+    if ($.frame % 2e3 === 0) {
+      $.transitions.trigger({
+        from: this,
+        to: this.parent.forestScene,
+        inTransition: $.transitions.IN.WIPERIGHT,
+        inSettings: { color: "#539ac1" },
+        outTransition: $.transitions.OUT.WIPERIGHT,
+        outSettings: { color: "#539ac1" }
+      });
+    }
+  }
+};
+
+// ts/main/flightGame.ts
+var FlightGame = class extends Main {
   constructor(container) {
     super(container);
     this.style("display: flex; justify-content: center; align-items: center;");
-    this.append(this.roi = new Content());
+    this.append(this.forestScene = new ForestFlight(this));
+    this.append(this.desertScene = new DesertFlight(this));
+    this.forestScene.visible = false;
+    this.desertScene.visible = false;
+    $.transitions.trigger({
+      to: this.forestScene,
+      inTransition: $.transitions.IN.INSTANT,
+      inSettings: { color: "black", duration: 100 },
+      outTransition: $.transitions.OUT.FADE,
+      outSettings: { color: "black" }
+    });
   }
   resize() {
     super.resize();
@@ -785,11 +1062,12 @@ var Game = class extends Main {
       $.size.x / 16,
       $.size.y / 9
     );
-    this.roi.scale(factor);
+    this.forestScene.scale(factor);
+    this.desertScene.scale(factor);
   }
 };
 
-// ts/util/ticker.ts
+// ts/util/game/ticker.ts
 var Ticker = class {
   constructor() {
     this.animationFrameId = null;
@@ -884,11 +1162,7 @@ var Ticker = class {
     this.frameCount++;
     this.lastFrameTime = currentTime;
     this.callbacks.forEach((callback) => {
-      try {
-        callback(deltaTime, elapsedTime, this.frameCount);
-      } catch (error) {
-        console.error("Error in ticker callback:", error);
-      }
+      callback(deltaTime, elapsedTime, this.frameCount);
     });
     this.animationFrameId = requestAnimationFrame(() => {
       this.tick();
@@ -897,7 +1171,292 @@ var Ticker = class {
 };
 var ticker = new Ticker();
 
-// ts/util/container.ts
+// ts/util/game/transitions/transitionBase.ts
+var TransitionIn = class extends Div {
+  constructor(defaultSettings) {
+    super({
+      classNames: ["transition-in"],
+      size: ["100%", "100%"]
+    });
+    this.defaultSettings = defaultSettings;
+    this.active = false;
+  }
+  get active() {
+    return this._active;
+  }
+  set active(value) {
+    this._active = value;
+    this.visible = value;
+  }
+  trigger(from, to, via, settings, settingsOut) {
+    this.startTime = $.time;
+    this.data = {
+      from,
+      to,
+      via,
+      settings,
+      settingsOut
+    };
+    this.applySettings(settings);
+    this.active = true;
+  }
+  applySettings(settings) {
+    this.duration = (settings == null ? void 0 : settings.duration) || this.defaultSettings.duration;
+  }
+  tick() {
+    if (this.active) {
+      const p = ($.time - this.startTime) / this.duration;
+      this.progress = Math.min(p, 1);
+      if (p >= 1) {
+        this.active = false;
+        this.progress = 0;
+        if (this.data.from) {
+          this.data.from.visible = false;
+        }
+        if (this.data.via) {
+          this.data.via.trigger(this.data.to, this.data.settingsOut);
+        }
+      }
+    }
+  }
+};
+var TransitionOut = class extends Div {
+  constructor(defaultSettings) {
+    super({
+      classNames: ["transition-out"],
+      size: ["100%", "100%"]
+    });
+    this.defaultSettings = defaultSettings;
+    this.active = false;
+  }
+  get active() {
+    return this._active;
+  }
+  set active(value) {
+    this._active = value;
+    this.visible = value;
+  }
+  trigger(to, settings) {
+    this.startTime = $.time;
+    this.data = {
+      to,
+      settings
+    };
+    this.applySettings(settings);
+    this.active = true;
+    if (to) {
+      to.visible = true;
+    }
+  }
+  applySettings(settings) {
+    this.duration = (settings == null ? void 0 : settings.duration) || this.defaultSettings.duration;
+  }
+  tick() {
+    if (this.active) {
+      const p = ($.time - this.startTime) / this.duration;
+      this.progress = Math.min(p, 1);
+      if (p >= 1) {
+        this.active = false;
+        this.progress = 0;
+      }
+    }
+  }
+};
+
+// ts/util/game/transitions/transitionFade.ts
+var TransitionInFade = class extends TransitionIn {
+  set progress(value) {
+    this.cover.style("opacity: ".concat(value, ";"));
+  }
+  constructor() {
+    super({ duration: 400, color: "black" });
+    this.cover = new Div({
+      size: ["100%", "100%"],
+      background: this.defaultSettings.color
+    });
+    this.append(this.cover);
+  }
+  applySettings(settings) {
+    super.applySettings(settings);
+    this.cover.style("background: ".concat((settings == null ? void 0 : settings.color) || this.defaultSettings.color, ";"));
+  }
+};
+var TransitionOutFade = class extends TransitionOut {
+  set progress(value) {
+    this.cover.style("opacity: ".concat(1 - value, ";"));
+  }
+  constructor() {
+    super({ duration: 400, color: "black" });
+    this.cover = new Div({
+      size: ["100%", "100%"],
+      background: this.defaultSettings.color
+    });
+    this.append(this.cover);
+  }
+  applySettings(settings) {
+    super.applySettings(settings);
+    this.cover.style("background: ".concat((settings == null ? void 0 : settings.color) || this.defaultSettings.color, ";"));
+  }
+};
+
+// ts/util/game/transitions/transitionInstant.ts
+var TransitionInInstant = class extends TransitionIn {
+  set progress(value) {
+    this.cover.style("opacity: ".concat(value >= 1 ? 0 : 1, ";"));
+  }
+  constructor() {
+    super({ duration: 0, color: "black" });
+    this.cover = new Div({
+      size: ["100%", "100%"],
+      background: this.defaultSettings.color
+    });
+    this.append(this.cover);
+  }
+  applySettings(settings) {
+    super.applySettings(settings);
+    this.cover.style("background: ".concat((settings == null ? void 0 : settings.color) || this.defaultSettings.color, ";"));
+  }
+};
+var TransitionOutInstant = class extends TransitionOut {
+  set progress(value) {
+    this.cover.style("opacity: ".concat(value >= 1 ? 1 : 0, ";"));
+  }
+  constructor() {
+    super({ duration: 0, color: "black" });
+    this.cover = new Div({
+      size: ["100%", "100%"],
+      background: this.defaultSettings.color
+    });
+    this.append(this.cover);
+  }
+  applySettings(settings) {
+    super.applySettings(settings);
+    this.cover.style("background: ".concat((settings == null ? void 0 : settings.color) || this.defaultSettings.color, ";"));
+  }
+};
+
+// ts/util/math/ease.ts
+var Ease = class {
+  static easeInOut(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+  static easeIn(t) {
+    return t * t;
+  }
+  static easeOut(t) {
+    return 1 - (1 - t) * (1 - t);
+  }
+};
+
+// ts/util/game/transitions/transitionWipe.ts
+var TransitionInWipeLeft = class extends TransitionIn {
+  set progress(value) {
+    this.cover.style("transform: translateX(".concat((1 - Ease.easeIn(value)) * 100, "%);"));
+  }
+  constructor() {
+    super({ duration: 800, color: "black" });
+    this.cover = new Div({
+      size: ["100%", "100%"],
+      background: this.defaultSettings.color
+    });
+    this.append(this.cover);
+  }
+  applySettings(settings) {
+    super.applySettings(settings);
+    this.cover.style("background: ".concat((settings == null ? void 0 : settings.color) || this.defaultSettings.color, ";"));
+  }
+};
+var TransitionOutWipeLeft = class extends TransitionOut {
+  set progress(value) {
+    this.cover.style("transform: translateX(".concat(Ease.easeOut(value) * -100, "%);"));
+  }
+  constructor() {
+    super({ duration: 800, color: "black" });
+    this.cover = new Div({
+      size: ["100%", "100%"],
+      background: "black"
+    });
+    this.append(this.cover);
+  }
+  applySettings(settings) {
+    super.applySettings(settings);
+    this.cover.style("background: ".concat((settings == null ? void 0 : settings.color) || this.defaultSettings.color, ";"));
+  }
+};
+var TransitionInWipeRight = class extends TransitionIn {
+  set progress(value) {
+    this.cover.style("transform: translateX(".concat((1 - Ease.easeIn(value)) * -100, "%);"));
+  }
+  constructor() {
+    super({ duration: 800, color: "black" });
+    this.cover = new Div({
+      size: ["100%", "100%"],
+      background: this.defaultSettings.color
+    });
+    this.append(this.cover);
+  }
+  applySettings(settings) {
+    super.applySettings(settings);
+    this.cover.style("background: ".concat((settings == null ? void 0 : settings.color) || this.defaultSettings.color, ";"));
+  }
+};
+var TransitionOutWipeRight = class extends TransitionOut {
+  set progress(value) {
+    this.cover.style("transform: translateX(".concat(Ease.easeOut(value) * 100, "%);"));
+  }
+  constructor() {
+    super({ duration: 800, color: "black" });
+    this.cover = new Div({
+      size: ["100%", "100%"],
+      background: "black"
+    });
+    this.append(this.cover);
+  }
+  applySettings(settings) {
+    super.applySettings(settings);
+    this.cover.style("background: ".concat((settings == null ? void 0 : settings.color) || "black", ";"));
+  }
+};
+
+// ts/util/game/transitions/transitionLibrary.ts
+var Transitions = class extends Div {
+  constructor() {
+    super({
+      classNames: ["transitions"],
+      size: ["100%", "100%"],
+      style: " z-index: 100; pointer-events: none;"
+    });
+    this.IN = {
+      FADE: new TransitionInFade(),
+      WIPELEFT: new TransitionInWipeLeft(),
+      WIPERIGHT: new TransitionInWipeRight(),
+      INSTANT: new TransitionInInstant()
+    };
+    this.OUT = {
+      FADE: new TransitionOutFade(),
+      WIPELEFT: new TransitionOutWipeLeft(),
+      WIPERIGHT: new TransitionOutWipeRight(),
+      INSTANT: new TransitionOutInstant()
+    };
+    [...Object.values(this.IN), ...Object.values(this.OUT)].forEach((transition) => {
+      this.append(transition);
+      transition.active = false;
+      transition.progress = 0;
+    });
+  }
+  trigger({
+    from,
+    to,
+    inTransition,
+    inSettings,
+    outTransition,
+    outSettings
+  }) {
+    inTransition.trigger(from, to, outTransition, inSettings, outSettings);
+  }
+};
+
+// ts/util/game/container.ts
 var Container = class extends Div {
   constructor() {
     super({
@@ -906,6 +1465,7 @@ var Container = class extends Div {
     });
     this.ticker = new Ticker();
     this.ticker.addCallback(this.tick.bind(this));
+    this.append(this.transitions = new Transitions());
     window.addEventListener("resize", this.resize.bind(this));
   }
   resize() {
@@ -926,7 +1486,7 @@ var Container = class extends Div {
 document.addEventListener("DOMContentLoaded", async () => {
   const g = new Container();
   document.body.appendChild(g.dom);
-  g.append(new Game(g));
+  g.append(new FlightGame(g));
   g.start();
 });
 //# sourceMappingURL=index.js.map

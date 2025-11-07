@@ -1,7 +1,7 @@
 
 import { Container } from './container';
-import { Div } from './html/div';
-import { Vector2 } from './math/vector2';
+import { Div } from '../html/div';
+import { Vector2 } from '../math/vector2';
 
 export class Main extends Div {
     public constructor(container: Container) {
@@ -9,7 +9,6 @@ export class Main extends Div {
             classNames: ['main'],
             size: ['100%', '100%'],
         });
-
 
         window['$'] = {
             get size(): Vector2 {
@@ -21,6 +20,7 @@ export class Main extends Div {
             get intervalMultiplier(): number {
                 return container.ticker.currentFPS / 60;
             },
+            transitions: container.transitions,
         };
     }
 }

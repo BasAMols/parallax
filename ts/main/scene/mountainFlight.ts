@@ -20,16 +20,16 @@ export class MountainFlight extends Flight {
         super.tick();
         if (this.visible) {
             this.parent.forestScene.plane.setTarget(this.plane.target);
-        }
-        if ($.frame % 2000 === 1000) {
-            $.transitions.trigger({
-                from: this,
-                to: this.parent.forestScene,
-                inTransition: $.transitions.IN.WIPERIGHT,
-                inSettings: { color: '#539ac1' },
-                outTransition: $.transitions.OUT.WIPERIGHT,
-                outSettings: { color: '#539ac1' },
-            });
+            if ($.frame % 2000 === 1000) {
+                $.transitions.trigger({
+                    from: this,
+                    to: this.parent.forestScene,
+                    inTransition: $.transitions.IN.WIPERIGHT,
+                    inSettings: { color: '#539ac1' },
+                    outTransition: $.transitions.OUT.WIPERIGHT,
+                    outSettings: { color: '#539ac1' },
+                });
+            }
         }
     }
 }

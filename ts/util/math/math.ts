@@ -1,10 +1,10 @@
 import { Vector2 } from './vector2';
 
-export class Math {
+export class MathUtil {
     // Max method overloads
-    max(a: number, b: number): number;
-    max(a: Vector2, b: Vector2): Vector2;
-    max(a: number | Vector2, b: number | Vector2): number | Vector2 {
+    static max(a: number, b: number): number;
+    static max(a: Vector2, b: Vector2): Vector2;
+    static max(a: number | Vector2, b: number | Vector2): number | Vector2 {
         if (typeof a === 'number' && typeof b === 'number') {
             return a > b ? a : b;
         } else if (a instanceof Vector2 && b instanceof Vector2) {
@@ -17,9 +17,9 @@ export class Math {
     }
     
     // Min method overloads
-    min(a: number, b: number): number;
-    min(a: Vector2, b: Vector2): Vector2;
-    min(a: number | Vector2, b: number | Vector2): number | Vector2 {
+    static  min(a: number, b: number): number;
+    static min(a: Vector2, b: Vector2): Vector2;
+    static min(a: number | Vector2, b: number | Vector2): number | Vector2 {
         if (typeof a === 'number' && typeof b === 'number') {
             return a < b ? a : b;
         } else if (a instanceof Vector2 && b instanceof Vector2) {
@@ -32,9 +32,9 @@ export class Math {
     }
     
     // Clamp method overloads
-    clamp(value: number, min: number, max: number): number;
-    clamp(value: Vector2, min: Vector2, max: Vector2): Vector2;
-    clamp(value: number | Vector2, min: number | Vector2, max: number | Vector2): number | Vector2 {
+    static clamp(value: number, min: number, max: number): number;
+    static clamp(value: Vector2, min: Vector2, max: Vector2): Vector2;
+    static clamp(value: number | Vector2, min: number | Vector2, max: number | Vector2): number | Vector2 {
         if (typeof value === 'number' && typeof min === 'number' && typeof max === 'number') {
             return this.max(min, this.min(value, max)) as number;
         } else if (value instanceof Vector2 && min instanceof Vector2 && max instanceof Vector2) {
@@ -47,9 +47,9 @@ export class Math {
     }
     
     // Lerp method overloads
-    lerp(a: number, b: number, t: number): number;
-    lerp(a: Vector2, b: Vector2, t: number): Vector2;
-    lerp(a: number | Vector2, b: number | Vector2, t: number): number | Vector2 {
+    static lerp(a: number, b: number, t: number): number;
+    static lerp(a: Vector2, b: Vector2, t: number): Vector2;
+    static lerp(a: number | Vector2, b: number | Vector2, t: number): number | Vector2 {
         if (typeof a === 'number' && typeof b === 'number') {
             return a + (b - a) * t;
         } else if (a instanceof Vector2 && b instanceof Vector2) {

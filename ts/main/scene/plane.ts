@@ -1,5 +1,6 @@
 import { Div } from "../../util/html/div";
 import { Sprite } from "../../util/html/sprite";
+import { MathUtil } from "../../util/math/math";
 import { Vector2 } from "../../util/math/vector2";
 
 
@@ -13,13 +14,16 @@ export class Plane extends Div {
     target: Vector2 = new Vector2(0, 0);
     position: Vector2 = new Vector2(0, 0);
     positions: Vector2[] = [];
+    random: number = 0;
 
     public constructor() {
         super({
             classNames: ['plane'],
             size: new Vector2(350, 150),
-            style: 'transform-origin: center center;',
+            style: 'transform-origin: 175px 75px;',
         });
+
+        this.random = Math.random()*120;
 
         this.append((this.sprite = new Sprite({
             image: 'dist/images/ship/sprite_player_spaceship_up_down.png',
@@ -53,9 +57,11 @@ export class Plane extends Div {
 
     setPosition(v: Vector2) {
         this.position = v;
-        this.style(`transform: translate(${v.x}px, ${v.y}px);`);
-        this.height = v.y
+        this.height = v.y+Math.sin(($.frame+this.random) / 120) * 1
+        this.style(`transform: translate(${v.x+Math.sin(($.frame+this.random) / 140) * 20}px, ${this.height}px);`);
         this.positions.push(v);
+        this.sprite.value = 6-Math.floor(MathUtil.clamp((this.height+500)/1000*6, 0, 6));
+        
         while (this.positions.length < 20) {
             this.positions.push(v);
         }
@@ -63,11 +69,8 @@ export class Plane extends Div {
             this.positions.shift();
         }
     }
-    get followPosition1(): Vector2 {
-        return this.positions[0];
-    }
-    get followPosition2(): Vector2 {
-        return this.positions[10];
+    getFollowPosition(n: number, max: number): Vector2 {
+        return this.positions[Math.min(Math.floor(n/max*20), 19)];
     }
     setTarget(v: Vector2) {
         this.target = v;
@@ -81,13 +84,16 @@ export class Plane extends Div {
         if (this.target){
             this.setPosition(this.position.moveTowards(this.target.subtract(new Vector2(175, 75)), this.maxScreenSpeed*$.intervalMultiplier));
         }
-        const delta = this.position.subtract(lastPosition);
-        if (delta.x > (this.maxScreenSpeed/3)) {
+        const delta = this.position.subtract(lastPosition).x+this.speed;
+        if (delta > (31)) {
             this.exhaustHigh.visible = true;
             this.exhaustLow.visible = false;
-        } else {
+        } else if (delta > (28)) {
             this.exhaustHigh.visible = false;
             this.exhaustLow.visible = true;
+        } else {
+            this.exhaustHigh.visible = false;
+            this.exhaustLow.visible = false;
         }
         
     }

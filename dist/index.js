@@ -643,13 +643,61 @@ var Sprite = class extends Div {
   }
 };
 
+// ts/util/math/math.ts
+var MathUtil = class {
+  static max(a, b) {
+    if (typeof a === "number" && typeof b === "number") {
+      return a > b ? a : b;
+    } else if (a instanceof Vector2 && b instanceof Vector2) {
+      return new Vector2(
+        a.x > b.x ? a.x : b.x,
+        a.y > b.y ? a.y : b.y
+      );
+    }
+    throw new Error("Invalid max arguments: both arguments must be either numbers or Vector2 objects");
+  }
+  static min(a, b) {
+    if (typeof a === "number" && typeof b === "number") {
+      return a < b ? a : b;
+    } else if (a instanceof Vector2 && b instanceof Vector2) {
+      return new Vector2(
+        a.x < b.x ? a.x : b.x,
+        a.y < b.y ? a.y : b.y
+      );
+    }
+    throw new Error("Invalid min arguments: both arguments must be either numbers or Vector2 objects");
+  }
+  static clamp(value, min, max) {
+    if (typeof value === "number" && typeof min === "number" && typeof max === "number") {
+      return this.max(min, this.min(value, max));
+    } else if (value instanceof Vector2 && min instanceof Vector2 && max instanceof Vector2) {
+      return new Vector2(
+        this.max(min.x, this.min(value.x, max.x)),
+        this.max(min.y, this.min(value.y, max.y))
+      );
+    }
+    throw new Error("Invalid clamp arguments: all arguments must be either numbers or Vector2 objects");
+  }
+  static lerp(a, b, t) {
+    if (typeof a === "number" && typeof b === "number") {
+      return a + (b - a) * t;
+    } else if (a instanceof Vector2 && b instanceof Vector2) {
+      return new Vector2(
+        a.x + (b.x - a.x) * t,
+        a.y + (b.y - a.y) * t
+      );
+    }
+    throw new Error("Invalid lerp arguments: a and b must be either both numbers or both Vector2 objects");
+  }
+};
+
 // ts/main/scene/plane.ts
 var Plane = class extends Div {
   constructor() {
     super({
       classNames: ["plane"],
       size: new Vector2(350, 150),
-      style: "transform-origin: center center;"
+      style: "transform-origin: 175px 75px;"
     });
     this.speed = 30;
     this.maxScreenSpeed = 3;
@@ -657,6 +705,8 @@ var Plane = class extends Div {
     this.target = new Vector2(0, 0);
     this.position = new Vector2(0, 0);
     this.positions = [];
+    this.random = 0;
+    this.random = Math.random() * 120;
     this.append(this.sprite = new Sprite({
       image: "dist/images/ship/sprite_player_spaceship_up_down.png",
       size: new Vector2(350, 150),
@@ -686,9 +736,10 @@ var Plane = class extends Div {
   }
   setPosition(v) {
     this.position = v;
-    this.style("transform: translate(".concat(v.x, "px, ").concat(v.y, "px);"));
-    this.height = v.y;
+    this.height = v.y + Math.sin(($.frame + this.random) / 120) * 1;
+    this.style("transform: translate(".concat(v.x + Math.sin(($.frame + this.random) / 140) * 20, "px, ").concat(this.height, "px);"));
     this.positions.push(v);
+    this.sprite.value = 6 - Math.floor(MathUtil.clamp((this.height + 500) / 1e3 * 6, 0, 6));
     while (this.positions.length < 20) {
       this.positions.push(v);
     }
@@ -696,11 +747,8 @@ var Plane = class extends Div {
       this.positions.shift();
     }
   }
-  get followPosition1() {
-    return this.positions[0];
-  }
-  get followPosition2() {
-    return this.positions[10];
+  getFollowPosition(n, max) {
+    return this.positions[Math.min(Math.floor(n / max * 20), 19)];
   }
   setTarget(v) {
     this.target = v;
@@ -713,13 +761,16 @@ var Plane = class extends Div {
     if (this.target) {
       this.setPosition(this.position.moveTowards(this.target.subtract(new Vector2(175, 75)), this.maxScreenSpeed * $.intervalMultiplier));
     }
-    const delta = this.position.subtract(lastPosition);
-    if (delta.x > this.maxScreenSpeed / 3) {
+    const delta = this.position.subtract(lastPosition).x + this.speed;
+    if (delta > 31) {
       this.exhaustHigh.visible = true;
       this.exhaustLow.visible = false;
-    } else {
+    } else if (delta > 28) {
       this.exhaustHigh.visible = false;
       this.exhaustLow.visible = true;
+    } else {
+      this.exhaustHigh.visible = false;
+      this.exhaustLow.visible = false;
     }
   }
 };
@@ -740,15 +791,23 @@ var Flight = class extends Div {
     }));
     this.content.append(this.bg = bg);
     this.content.append(this.follow1 = new Plane());
-    this.content.append(this.plane = new Plane());
     this.content.append(this.follow2 = new Plane());
+    this.content.append(this.plane = new Plane());
+    this.content.append(this.follow3 = new Plane());
+    this.content.append(this.follow4 = new Plane());
     this.content.append(this.bg.foregroundLayer);
-    this.follow1.style("scale: 0.9;");
-    this.follow2.style("scale: 1.05;");
+    this.follow1.style("scale: 0.8;");
+    this.follow2.style("scale: 0.9;");
+    this.follow3.style("scale: 1.05;");
+    this.follow4.style("scale: 1.1;");
     this.follow1.sprite.value = 5;
-    this.follow2.sprite.value = 0;
-    this.follow1.setPosition(this.plane.position.add(new Vector2(-5e3, 40)));
-    this.follow2.setPosition(this.plane.position.add(new Vector2(-4e3 - 100, 120)));
+    this.follow2.sprite.value = 3;
+    this.follow3.sprite.value = 2;
+    this.follow4.sprite.value = 0;
+    this.follow1.setPosition(this.plane.position.add(new Vector2(-5e3, 120)));
+    this.follow2.setPosition(this.plane.position.add(new Vector2(-4e3, 120)));
+    this.follow3.setPosition(this.plane.position.add(new Vector2(-4e3, 120)));
+    this.follow4.setPosition(this.plane.position.add(new Vector2(-5e3, 120)));
     const i = this.content.append(new Div({
       size: ["1920px", "1080px"],
       style: "position: absolute; left: 0; top: 0;"
@@ -784,8 +843,10 @@ var Flight = class extends Div {
     super.tick();
     this.bg.move(this.plane.speed);
     this.bg.height(this.plane.height * 2 - 1400);
-    this.follow1.setTarget(this.plane.followPosition1.add(new Vector2(300 - 100, 50)));
-    this.follow2.setTarget(this.plane.followPosition2.add(new Vector2(150 - 100, 120)));
+    this.follow1.setTarget(this.plane.getFollowPosition(0, 4).add(new Vector2(300 - 150 - 80, 80)));
+    this.follow2.setTarget(this.plane.getFollowPosition(2, 4).add(new Vector2(300 - 150, 80)));
+    this.follow3.setTarget(this.plane.getFollowPosition(3, 4).add(new Vector2(150 - 150, 80)));
+    this.follow4.setTarget(this.plane.getFollowPosition(1, 4).add(new Vector2(150 - 150 - 120, 80)));
   }
 };
 
@@ -798,16 +859,6 @@ var ForestFlight = class extends Flight {
     super.tick();
     if (this.visible) {
       this.parent.mountainScene.plane.setTarget(this.plane.target);
-    }
-    if ($.frame % 2e3 === 1e3) {
-      $.transitions.trigger({
-        from: this,
-        to: this.parent.mountainScene,
-        inTransition: $.transitions.IN.WIPERIGHT,
-        inSettings: { color: "#539ac1" },
-        outTransition: $.transitions.OUT.WIPERIGHT,
-        outSettings: { color: "#539ac1" }
-      });
     }
   }
 };
@@ -998,16 +1049,16 @@ var MountainFlight = class extends Flight {
     super.tick();
     if (this.visible) {
       this.parent.forestScene.plane.setTarget(this.plane.target);
-    }
-    if ($.frame % 2e3 === 1e3) {
-      $.transitions.trigger({
-        from: this,
-        to: this.parent.forestScene,
-        inTransition: $.transitions.IN.WIPERIGHT,
-        inSettings: { color: "#539ac1" },
-        outTransition: $.transitions.OUT.WIPERIGHT,
-        outSettings: { color: "#539ac1" }
-      });
+      if ($.frame % 2e3 === 1e3) {
+        $.transitions.trigger({
+          from: this,
+          to: this.parent.forestScene,
+          inTransition: $.transitions.IN.WIPERIGHT,
+          inSettings: { color: "#539ac1" },
+          outTransition: $.transitions.OUT.WIPERIGHT,
+          outSettings: { color: "#539ac1" }
+        });
+      }
     }
   }
 };

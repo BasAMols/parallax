@@ -18,6 +18,8 @@ export class Flight extends Div {
     public scaleFactor: number;
     public follow1: Plane;
     public follow2: Plane;
+    public follow3: Plane;
+    public follow4: Plane;
     public pointerDown: boolean = false;
 
     set visible(value: boolean) {
@@ -43,18 +45,26 @@ export class Flight extends Div {
         this.content.append((this.bg = bg));
 
         this.content.append((this.follow1 = new Plane()));
-        this.content.append((this.plane = new Plane()));
         this.content.append((this.follow2 = new Plane()));
+        this.content.append((this.plane = new Plane()));
+        this.content.append((this.follow3 = new Plane()));
+        this.content.append((this.follow4 = new Plane()));
 
         this.content.append(this.bg.foregroundLayer);
 
-        this.follow1.style('scale: 0.9;');
-        this.follow2.style('scale: 1.05;');
+        this.follow1.style('scale: 0.8;');
+        this.follow2.style('scale: 0.9;');
+        this.follow3.style('scale: 1.05;');
+        this.follow4.style('scale: 1.1;');
         this.follow1.sprite.value = 5;
-        this.follow2.sprite.value = 0;
+        this.follow2.sprite.value = 3;
+        this.follow3.sprite.value = 2;
+        this.follow4.sprite.value = 0;
 
-        this.follow1.setPosition(this.plane.position.add(new Vector2(-5000, 40)));
-        this.follow2.setPosition(this.plane.position.add(new Vector2(-4000 - 100, 120)));
+        this.follow1.setPosition(this.plane.position.add(new Vector2(-5000, 120)));
+        this.follow2.setPosition(this.plane.position.add(new Vector2(-4000, 120)));
+        this.follow3.setPosition(this.plane.position.add(new Vector2(-4000, 120)));
+        this.follow4.setPosition(this.plane.position.add(new Vector2(-5000, 120)));
 
         // this.content.append((this.dialogue = new Dialogue()));
 
@@ -88,7 +98,9 @@ export class Flight extends Div {
         super.tick();
         this.bg.move(this.plane.speed);
         this.bg.height(this.plane.height * 2 - 1400);
-        this.follow1.setTarget(this.plane.followPosition1.add(new Vector2(300 - 100, 50)));
-        this.follow2.setTarget(this.plane.followPosition2.add(new Vector2(150 - 100, 120)));
+        this.follow1.setTarget(this.plane.getFollowPosition(0, 4).add(new Vector2(300 - 150 - 80, 80)));
+        this.follow2.setTarget(this.plane.getFollowPosition(2, 4).add(new Vector2(300 - 150, 80,)));
+        this.follow3.setTarget(this.plane.getFollowPosition(3, 4).add(new Vector2(150 - 150, 80,)));
+        this.follow4.setTarget(this.plane.getFollowPosition(1, 4).add(new Vector2(150 - 150 - 120, 80,)));
     }
 }

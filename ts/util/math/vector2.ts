@@ -210,4 +210,8 @@ export class Vector2 {
             return new Vector2(roundToPrecision(this.x, arg1.x), roundToPrecision(this.y, arg1.y));
         }
     }
+
+    public stringSize(): string {
+        return `${this.x}px ${this.y}px`;
+    }
 }

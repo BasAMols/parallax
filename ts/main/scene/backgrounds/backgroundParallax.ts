@@ -1,4 +1,5 @@
 import { Div } from "../../../util/html/div";
+import { MathUtil } from "../../../util/math/math";
 
 export class BackgroundParallax extends Div {
     
@@ -39,7 +40,7 @@ export class BackgroundParallax extends Div {
         // this.foregroundLayer.style(`top: ${height}px;`);
         // this.backgroundLayer.style(`top: ${height}px;`);
         this.layer.forEach(layer => {
-            layer.element.style(`margin-top: ${height*-layer.speed + 100}px;`);
+            layer.element.style(`margin-top: ${MathUtil.clamp(height, -2000, 500)*-layer.speed + 100}px;`);
         });
     }
 }

@@ -29,7 +29,7 @@ export interface TransitionOutInstantSettings extends TransitionSettings {
 export class TransitionOutInstant extends TransitionOut<TransitionInInstantSettings> {
     private cover: Div;
     public set progress(value: number) {
-        this.cover.style(`opacity: ${value>=1 ? 1 : 0};`);
+        this.cover.style(`opacity: ${value>=1 ? 0 : 1};`);
     }
     public constructor() {
         super({ duration: 0, color: 'black' });

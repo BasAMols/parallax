@@ -3,6 +3,15 @@ import { Div } from "../../util/html/div";
 
 
 export class Gameover extends Div {
+    set visible(value: boolean) {
+        super.visible = value;
+        if (value) {
+            location.reload();
+        }
+    }
+    get visible(): boolean {
+        return super.visible;
+    }
     public constructor() {
         super({
             classNames: ['gameover-content'],

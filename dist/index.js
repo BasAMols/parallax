@@ -487,6 +487,15 @@ var Main = class extends Div {
 
 // ts/main/menu/gameover.ts
 var Gameover = class extends Div {
+  set visible(value) {
+    super.visible = value;
+    if (value) {
+      location.reload();
+    }
+  }
+  get visible() {
+    return super.visible;
+  }
   constructor() {
     super({
       classNames: ["gameover-content"],
@@ -783,6 +792,7 @@ var Flight = class extends Div {
     this.pointerDown = false;
     this.lives = 5;
     this.explosions = [];
+    this.keys = { a: false, d: false, w: false, s: false };
     this.append(this.content = new Div({
       classNames: ["content"],
       size: ["1920px", "1080px"],
@@ -831,6 +841,38 @@ var Flight = class extends Div {
     i.dom.addEventListener("pointerup", (e) => {
       this.pointerDown = false;
     });
+    window.addEventListener("keydown", (e) => {
+      console.log(e.key);
+      if (e.key === " ") {
+        this.hit();
+      }
+      if (e.key === "a") {
+        this.keys.a = true;
+      }
+      if (e.key === "d") {
+        this.keys.d = true;
+      }
+      if (e.key === "w") {
+        this.keys.w = true;
+      }
+      if (e.key === "s") {
+        this.keys.s = true;
+      }
+    });
+    window.addEventListener("keyup", (e) => {
+      if (e.key === "a") {
+        this.keys.a = false;
+      }
+      if (e.key === "d") {
+        this.keys.d = false;
+      }
+      if (e.key === "w") {
+        this.keys.w = false;
+      }
+      if (e.key === "s") {
+        this.keys.s = false;
+      }
+    });
   }
   hit() {
     if (this.plane.crashed)
@@ -839,32 +881,34 @@ var Flight = class extends Div {
     if (this.lives <= 0) {
       this.plane.crash();
       this.gameOver();
-      this.explode(this.plane.realPosition, this.plane.dom.style.zIndex);
+      this.explode(this.plane);
     } else {
       const plane = [this.follow1, this.follow2, this.follow3, this.follow4].filter((plane2) => !plane2.crashed).sort((a, b) => Math.random() - 0.5)[0];
       plane.crash();
-      this.explode(plane.realPosition, plane.dom.style.zIndex);
+      this.explode(plane);
     }
   }
-  explode(v, zIndex) {
+  explode(plane) {
     for (let i = 0; i < Math.random() * 20 + 5; i++) {
-      const explosion = new ExplosionHit(this.content, v.add(new Vector2(Math.random() * 200, Math.random() * 100)), 700, Math.random() * 2 + 2, Math.random() * 100 + i * 250);
-      explosion.style("z-index: ".concat(zIndex, ";"));
+      const explosion = new ExplosionHit(this.content, plane.realPosition.add(new Vector2(Math.random() * 200 - 50, Math.random() * 100 - 50)), 700, Math.random() * 4 + 2, Math.random() * 100 + i * 250);
+      explosion.style("z-index: ".concat(plane.dom.style.zIndex, ";"));
     }
   }
   explodeGround(plane) {
-    const explosion = new ExplosionGround(this.content, plane.realPosition.add(new Vector2(-80, -180)), 1e3, 4 * plane.scale, 0);
-    explosion.style("z-index: ".concat(plane.dom.style.zIndex, ";"));
-    this.explosions.push(explosion);
+    for (let i = 0; i < Math.random() * 10; i++) {
+      const explosion = new ExplosionGround(this.content, plane.realPosition.add(new Vector2(-80 + Math.random() * 80, -180)), 1e3, 2 * Math.random() + 2 * plane.scale, i * 300);
+      explosion.style("z-index: ".concat(plane.dom.style.zIndex, ";"));
+      this.explosions.push(explosion);
+    }
   }
   gameOver() {
     $.transitions.trigger({
       from: this,
       to: this.parent.gameover,
       inTransition: $.transitions.IN.FADE,
-      inSettings: { color: "black", duration: 5e3 },
+      inSettings: { color: "black", duration: 3e3 },
       outTransition: $.transitions.OUT.FADE,
-      outSettings: { color: "black", duration: 500 }
+      outSettings: { color: "black", duration: 0 }
     });
   }
   set visible(value) {
@@ -883,6 +927,18 @@ var Flight = class extends Div {
   }
   tick() {
     super.tick();
+    if (this.keys.a) {
+      this.plane.setTarget(this.plane.target.add(new Vector2(-1 * $.intervalMultiplier, 0)));
+    }
+    if (this.keys.d) {
+      this.plane.setTarget(this.plane.target.add(new Vector2(1 * $.intervalMultiplier, 0)));
+    }
+    if (this.keys.w) {
+      this.plane.setTarget(this.plane.target.add(new Vector2(0, -1 * $.intervalMultiplier)));
+    }
+    if (this.keys.s) {
+      this.plane.setTarget(this.plane.target.add(new Vector2(0, 1 * $.intervalMultiplier)));
+    }
     this.bg.move(this.plane.speed);
     this.bg.height(this.plane.height * 2 - 1400);
     this.follow2.setTarget(this.plane.getFollowPosition(2, 4).subtract(new Vector2(100, 40)));

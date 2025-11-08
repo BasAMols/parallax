@@ -28,6 +28,7 @@ export class Flight extends Div {
     public lives: number = 5;
     explosions: Particle[] = [];
     test2: Div;
+    keys: { a: boolean, d: boolean, w: boolean, s: boolean } = { a: false, d: false, w: false, s: false };
 
     public hit() {
         if (this.plane.crashed) return;
@@ -35,24 +36,26 @@ export class Flight extends Div {
         if (this.lives <= 0) {
             this.plane.crash();
             this.gameOver();
-            this.explode(this.plane.realPosition, this.plane.dom.style.zIndex);
+            this.explode(this.plane);
         } else {
             const plane = [this.follow1, this.follow2, this.follow3, this.follow4].filter(plane => !plane.crashed).sort((a, b) => Math.random() - 0.5)[0];
             plane.crash();
-            this.explode(plane.realPosition, plane.dom.style.zIndex);
+            this.explode(plane);
         }
     }
 
-    public explode(v: Vector2, zIndex: string) {
+    public explode(plane: Plane) {
         for (let i = 0; i < Math.random() * 20 + 5; i++) {
-            const explosion = new ExplosionHit(this.content, v.add(new Vector2(Math.random() * 200, Math.random() * 100)), 700, Math.random() * 2 + 2, (Math.random() * 100) + (i * 250));
-            explosion.style(`z-index: ${zIndex};`);
+            const explosion = new ExplosionHit(this.content, plane.realPosition.add(new Vector2(Math.random() * 200 - 50, Math.random() * 100 - 50)), 700, Math.random() * 4 + 2, (Math.random() * 100) + (i * 250));
+            explosion.style(`z-index: ${plane.dom.style.zIndex};`);
         }
     }
     public explodeGround(plane: Plane) {
-        const explosion = new ExplosionGround(this.content, plane.realPosition.add(new Vector2(-80, -180)), 1000, 4*plane.scale, 0);
-        explosion.style(`z-index: ${plane.dom.style.zIndex};`);
-        this.explosions.push(explosion);
+        for (let i = 0; i < Math.random() * 10; i++) {
+            const explosion = new ExplosionGround(this.content, plane.realPosition.add(new Vector2(-80 + Math.random() *80, -180)), 1000, 2*Math.random()+2*plane.scale, i * 300);
+            explosion.style(`z-index: ${plane.dom.style.zIndex};`);
+            this.explosions.push(explosion);
+        }
     }
 
     gameOver() {
@@ -60,9 +63,9 @@ export class Flight extends Div {
             from: this,
             to: this.parent.gameover,
             inTransition: $.transitions.IN.FADE,
-            inSettings: { color: 'black', duration: 5000 },
+            inSettings: { color: 'black', duration: 3000 },
             outTransition: $.transitions.OUT.FADE,
-            outSettings: { color: 'black', duration: 500 },
+            outSettings: { color: 'black', duration: 0 },
         });
     }
 
@@ -135,6 +138,38 @@ export class Flight extends Div {
         i.dom.addEventListener('pointerup', (e) => {
             this.pointerDown = false;
         });
+        window.addEventListener('keydown', (e) => {
+            console.log(e.key);
+            if (e.key === ' ') {
+                this.hit();
+            }
+            if (e.key === 'a') {
+                this.keys.a = true;
+            }
+            if (e.key === 'd') {
+                this.keys.d = true;
+            }
+            if (e.key === 'w') {
+                this.keys.w = true;
+            }
+            if (e.key === 's') {
+                this.keys.s = true;
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'a') {
+                this.keys.a = false;
+            }
+            if (e.key === 'd') {
+                this.keys.d = false;
+            }
+            if (e.key === 'w') {
+                this.keys.w = false;
+            }
+            if (e.key === 's') {
+                this.keys.s = false;
+            }
+        });
     }
 
     scale(factor: number) {
@@ -145,6 +180,20 @@ export class Flight extends Div {
 
     tick(): void {
         super.tick();
+
+        if (this.keys.a) {
+            this.plane.setTarget(this.plane.target.add(new Vector2(-1*$.intervalMultiplier, 0)));
+        }
+        if (this.keys.d) {
+            this.plane.setTarget(this.plane.target.add(new Vector2(1*$.intervalMultiplier, 0)));
+        }
+        if (this.keys.w) {
+            this.plane.setTarget(this.plane.target.add(new Vector2(0, -1*$.intervalMultiplier)));
+        }
+        if (this.keys.s) {
+            this.plane.setTarget(this.plane.target.add(new Vector2(0, 1*$.intervalMultiplier)));
+        }
+
         this.bg.move(this.plane.speed);
         this.bg.height(this.plane.height * 2 - 1400);
 

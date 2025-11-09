@@ -8,9 +8,10 @@ import { BackgroundParallax } from "./backgrounds/backgroundParallax";
 import { DesertBackground } from "./backgrounds/moutain";
 import { ForestBackground } from "./backgrounds/forest";
 import { Plane } from "./plane";
-import { ExplosionHit } from "../../util/game/particles/explosion/explosionHit";
-import { ExplosionGround } from "../../util/game/particles/explosion/explosionGround";
-import { Particle } from "../../util/game/particles/particle";
+import { ExplosionHit } from "../../util/game/particles/animations/explosionHit";
+import { ExplosionGround } from "../../util/game/particles/animations/explosionGround";
+import { Animation } from "../../util/game/particles/animations/animation";
+import { Bullet } from "../../util/game/particles/particles/bullet";
 
 
 export class Flight extends Div {
@@ -26,9 +27,13 @@ export class Flight extends Div {
     public follow4: Plane;
     public pointerDown: boolean = false;
     public lives: number = 5;
-    explosions: Particle[] = [];
+    explosions: Animation[] = [];
     test2: Div;
-    keys: { a: boolean, d: boolean, w: boolean, s: boolean } = { a: false, d: false, w: false, s: false };
+    keys: { a: boolean, d: boolean, w: boolean, s: boolean, z: boolean } = { a: false, d: false, w: false, s: false, z: false };
+
+    public get planes(): Plane[] {
+        return [this.plane, this.follow1, this.follow2, this.follow3, this.follow4];
+    }
 
     public hit() {
         if (this.plane.crashed) return;
@@ -52,11 +57,12 @@ export class Flight extends Div {
     }
     public explodeGround(plane: Plane) {
         for (let i = 0; i < Math.random() * 10; i++) {
-            const explosion = new ExplosionGround(this.content, plane.realPosition.add(new Vector2(-80 + Math.random() *80, -180)), 1000, 2*Math.random()+2*plane.scale, i * 300);
+            const explosion = new ExplosionGround(this.content, plane.realPosition.add(new Vector2(-80 + Math.random() * 80, -180)), 1000, 2 * Math.random() + 2 * plane.scale, i * 300);
             explosion.style(`z-index: ${plane.dom.style.zIndex};`);
             this.explosions.push(explosion);
         }
     }
+
 
     gameOver() {
         $.transitions.trigger({
@@ -139,7 +145,6 @@ export class Flight extends Div {
             this.pointerDown = false;
         });
         window.addEventListener('keydown', (e) => {
-            console.log(e.key);
             if (e.key === ' ') {
                 this.hit();
             }
@@ -155,6 +160,9 @@ export class Flight extends Div {
             if (e.key === 's') {
                 this.keys.s = true;
             }
+            if (e.key === 'z') {
+                this.keys.z = true;
+            }
         });
         window.addEventListener('keyup', (e) => {
             if (e.key === 'a') {
@@ -168,7 +176,13 @@ export class Flight extends Div {
             }
             if (e.key === 's') {
                 this.keys.s = false;
+
             }
+            if (e.key === 'z') {
+                this.keys.z = false;
+
+            }
+
         });
     }
 
@@ -181,17 +195,24 @@ export class Flight extends Div {
     tick(): void {
         super.tick();
 
+
+
         if (this.keys.a) {
-            this.plane.setTarget(this.plane.target.add(new Vector2(-1*$.intervalMultiplier, 0)));
+            this.plane.setTarget(this.plane.target.add(new Vector2(-1 * $.intervalMultiplier, 0)));
         }
         if (this.keys.d) {
-            this.plane.setTarget(this.plane.target.add(new Vector2(1*$.intervalMultiplier, 0)));
+            this.plane.setTarget(this.plane.target.add(new Vector2(1 * $.intervalMultiplier, 0)));
         }
         if (this.keys.w) {
-            this.plane.setTarget(this.plane.target.add(new Vector2(0, -1*$.intervalMultiplier)));
+            this.plane.setTarget(this.plane.target.add(new Vector2(0, -1 * $.intervalMultiplier)));
         }
         if (this.keys.s) {
-            this.plane.setTarget(this.plane.target.add(new Vector2(0, 1*$.intervalMultiplier)));
+            this.plane.setTarget(this.plane.target.add(new Vector2(0, 1 * $.intervalMultiplier)));
+        }
+        if (this.keys.z) {
+            this.planes.forEach(plane => {
+                plane.shoot();
+            });
         }
 
         this.bg.move(this.plane.speed);
@@ -213,7 +234,7 @@ export class Flight extends Div {
         }
 
         this.explosions.forEach(explosion => {
-            explosion.transform.move(new Vector2(-this.plane.speed/$.intervalMultiplier*0.5,0 ));
+            explosion.transform.move(new Vector2(-this.plane.speed / $.intervalMultiplier * 0.5, 0));
         });
 
     }

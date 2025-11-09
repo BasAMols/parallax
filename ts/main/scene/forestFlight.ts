@@ -9,7 +9,7 @@ import { DesertBackground } from "./backgrounds/moutain";
 import { ForestBackground } from "./backgrounds/forest";
 import { Plane } from "./plane";
 import { Flight } from "./flight";
-import { ExplosionHit } from "../../util/game/particles/explosion/explosionHit";
+import { ExplosionHit } from "../../util/game/particles/animations/explosionHit";
 
 
 export class ForestFlight extends Flight {

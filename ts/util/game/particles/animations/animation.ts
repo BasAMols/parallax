@@ -1,9 +1,9 @@
-import { Div } from "../../html/div";
-import { El } from "../../html/el";
-import { Sprite } from "../../html/sprite";
-import { Vector2 } from "../../math/vector2";
+import { Div } from "../../../html/div";
+import { El } from "../../../html/el";
+import { Sprite } from "../../../html/sprite";
+import { Vector2 } from "../../../math/vector2";
 
-export class Particle extends Div {
+export class Animation extends Div {
 
     private start: number;
     public position: Vector2;

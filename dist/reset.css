@@ -50,4 +50,5 @@ table {
 *{
     box-sizing: border-box;
 	position: absolute;
+	image-rendering: pixelated; /*no blur*/
 }

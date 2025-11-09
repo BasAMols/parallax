@@ -589,6 +589,54 @@ var Sprite = class extends Div {
   }
 };
 
+// ts/util/game/particles/particles/particle.ts
+var Particle = class extends Div {
+  constructor(parent, options) {
+    super(__spreadValues({}, options));
+    this.parent = parent;
+    this.time = 0;
+    this.velocity = options.velocity;
+    this.acceleration = options.acceleration || 1;
+    this.lifespan = options.lifespan;
+    this.asset = options.asset;
+    this.time = $.time;
+    this.append(this.asset.element);
+    this.parent.append(this);
+  }
+  tick() {
+    super.tick();
+    this.velocity = this.velocity.multiply(this.acceleration);
+    this.transform.move(this.velocity);
+    if ("duration" in this.asset) {
+      this.asset.element.factor = $.time / this.asset.duration % this.asset.element.max;
+    }
+    if ($.time > this.time + this.lifespan) {
+      this.parent.removeChild(this);
+    }
+  }
+};
+
+// ts/util/game/particles/particles/bullet.ts
+var Bullet = class extends Particle {
+  constructor(parent, velocity, scaleMultiplier = 1, options = {}) {
+    super(parent, __spreadValues({
+      velocity: velocity.multiply(scaleMultiplier),
+      acceleration: 1,
+      lifespan: 5e3,
+      scale: new Vector2(4 * scaleMultiplier, 4 * scaleMultiplier),
+      asset: {
+        element: new Sprite({
+          image: "dist/images/ship/laserout1-sheet.png",
+          size: new Vector2(11, 10),
+          columns: 2,
+          rows: 1
+        }),
+        duration: 70
+      }
+    }, options));
+  }
+};
+
 // ts/main/scene/plane.ts
 var Plane = class extends Div {
   constructor(scale = 1, parent) {
@@ -609,6 +657,7 @@ var Plane = class extends Div {
     this.crashed = false;
     this.crashTime = 0;
     this.realPosition = new Vector2(0, 0);
+    this.shootTime = 0;
     this.random = Math.random() * 120;
     this.append(this.sprite = new Sprite({
       image: "dist/images/ship/sprite_player_spaceship_up_down.png",
@@ -694,6 +743,17 @@ var Plane = class extends Div {
     this.parent.explodeGround(this);
     this.visible = false;
   }
+  shoot() {
+    if (this.crashed)
+      return;
+    if ($.time - this.shootTime < 200)
+      return;
+    this.shootTime = $.time;
+    new Bullet(this.parent.content, new Vector2(8, 0), this.scale, {
+      style: "z-index: ".concat(this.dom.style.zIndex, ";"),
+      position: this.realPosition.add(new Vector2(120, 60).multiply(this.scale))
+    });
+  }
   tick() {
     super.tick();
     if (!this.visible && this.scale !== 1)
@@ -718,7 +778,7 @@ var Plane = class extends Div {
     if (!this.crashed && delta > 31) {
       this.exhaustHigh.visible = true;
       this.exhaustLow.visible = false;
-    } else if (!this.crash && delta > 28) {
+    } else if (!this.crashed && delta > 28) {
       this.exhaustHigh.visible = false;
       this.exhaustLow.visible = true;
     } else {
@@ -728,8 +788,8 @@ var Plane = class extends Div {
   }
 };
 
-// ts/util/game/particles/particle.ts
-var Particle = class extends Div {
+// ts/util/game/particles/animations/animation.ts
+var Animation = class extends Div {
   constructor(parent, asset, position, duration, scale = 1, offsetStart = 0) {
     super({
       scale: new Vector2(scale, scale),
@@ -757,8 +817,8 @@ var Particle = class extends Div {
   }
 };
 
-// ts/util/game/particles/explosion/explosionHit.ts
-var ExplosionHit = class extends Particle {
+// ts/util/game/particles/animations/explosionHit.ts
+var ExplosionHit = class extends Animation {
   constructor(parent, position, duration = 400, scale = 1, offsetStart = 0) {
     super(parent, new Sprite({
       image: "dist/images/explosion/hit.png",
@@ -769,8 +829,8 @@ var ExplosionHit = class extends Particle {
   }
 };
 
-// ts/util/game/particles/explosion/explosionGround.ts
-var ExplosionGround = class extends Particle {
+// ts/util/game/particles/animations/explosionGround.ts
+var ExplosionGround = class extends Animation {
   constructor(parent, position, duration = 400, scale = 1, offsetStart = 0) {
     super(parent, new Sprite({
       image: "dist/images/explosion/down.png",
@@ -792,7 +852,7 @@ var Flight = class extends Div {
     this.pointerDown = false;
     this.lives = 5;
     this.explosions = [];
-    this.keys = { a: false, d: false, w: false, s: false };
+    this.keys = { a: false, d: false, w: false, s: false, z: false };
     this.append(this.content = new Div({
       classNames: ["content"],
       size: ["1920px", "1080px"],
@@ -842,7 +902,6 @@ var Flight = class extends Div {
       this.pointerDown = false;
     });
     window.addEventListener("keydown", (e) => {
-      console.log(e.key);
       if (e.key === " ") {
         this.hit();
       }
@@ -858,6 +917,9 @@ var Flight = class extends Div {
       if (e.key === "s") {
         this.keys.s = true;
       }
+      if (e.key === "z") {
+        this.keys.z = true;
+      }
     });
     window.addEventListener("keyup", (e) => {
       if (e.key === "a") {
@@ -872,7 +934,13 @@ var Flight = class extends Div {
       if (e.key === "s") {
         this.keys.s = false;
       }
+      if (e.key === "z") {
+        this.keys.z = false;
+      }
     });
+  }
+  get planes() {
+    return [this.plane, this.follow1, this.follow2, this.follow3, this.follow4];
   }
   hit() {
     if (this.plane.crashed)
@@ -938,6 +1006,11 @@ var Flight = class extends Div {
     }
     if (this.keys.s) {
       this.plane.setTarget(this.plane.target.add(new Vector2(0, 1 * $.intervalMultiplier)));
+    }
+    if (this.keys.z) {
+      this.planes.forEach((plane) => {
+        plane.shoot();
+      });
     }
     this.bg.move(this.plane.speed);
     this.bg.height(this.plane.height * 2 - 1400);

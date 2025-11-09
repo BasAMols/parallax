@@ -1,4 +1,6 @@
-import { ExplosionHit } from "../../util/game/particles/explosion/explosionHit";
+import { ExplosionHit } from "../../util/game/particles/animations/explosionHit";
+import { ShootAnimation } from "../../util/game/particles/animations/shoot";
+import { Bullet } from "../../util/game/particles/particles/bullet";
 import { Div } from "../../util/html/div";
 import { Sprite } from "../../util/html/sprite";
 import { MathUtil } from "../../util/math/math";
@@ -116,6 +118,16 @@ export class Plane extends Div {
         this.parent.explodeGround(this);
         this.visible = false;
     }
+    shootTime: number = 0;
+    shoot() {
+        if (this.crashed) return;
+        if ($.time - this.shootTime < 200) return;
+        this.shootTime = $.time;
+        new Bullet(this.parent.content, new Vector2(8, 0), this.scale, {
+            style: `z-index: ${this.dom.style.zIndex};`,
+            position: this.realPosition.add(new Vector2(120, 60).multiply(this.scale)),
+        });
+    }
 
     tick() {
         super.tick();
@@ -125,7 +137,6 @@ export class Plane extends Div {
         this.exhaustHigh.value = Math.floor($.time / 100);
         this.exhaustLow.value = Math.floor($.time / 100);
         const lastPosition = this.position.clone();
-
         
         if (this.crashed) {
             this.setPosition(new Vector2(this.position.x - ($.time - this.crashTime) * 0.004, this.position.y + ($.time - this.crashTime) * 0.004));
@@ -145,7 +156,7 @@ export class Plane extends Div {
         if (!this.crashed && delta > (31)) {
             this.exhaustHigh.visible = true;
             this.exhaustLow.visible = false;
-        } else if (!this.crash && delta > (28)) {
+        } else if (!this.crashed && delta > (28)) {
             this.exhaustHigh.visible = false;
             this.exhaustLow.visible = true;
         } else {
